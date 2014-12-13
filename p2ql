@@ -1,0 +1,8 @@
+#! /bin/bash
+
+eclipse_home=/opt/rh/eclipse-luna/root/usr/lib64/eclipse
+osgiJar=`find ${eclipse_home} -name "org.eclipse.osgi_*.jar"`
+p2qJar=$(dirname $(readlink -f $0))/target/org.fedoraproject.p2query-0.0.1-SNAPSHOT.jar
+app=org.fedoraproject.p2query.app.P2QueryApp
+
+java -classpath ${osgiJar}:${p2qJar}:$(build-classpath slf4j/api) ${app} ${eclipse_home} ${p2qJar} ${@}
