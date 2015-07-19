@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.fedoraproject.p2query.osgi.impl;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -52,7 +54,14 @@ public class DefaultOSGiFramework implements OSGiFramework {
 			buf.append(bundle);
 		}
 		properties.put("osgi.bundles", buf.substring(1));
-
+		String tmpDir = System.getProperty("java.io.tmpdir");
+		if (tmpDir != null) {
+			Path configLoc = Paths.get(tmpDir, "fedora-equinox");
+			if (!Files.exists(configLoc)) {
+				Files.createDirectory(configLoc);
+			}
+			properties.put("osgi.configuration.area", configLoc.toString());
+		}
 		properties.put("osgi.parentClassloader", "fwk");
 
 		buf = new StringBuffer();
