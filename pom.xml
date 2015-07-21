@@ -20,7 +20,7 @@
   <artifactId>org.fedoraproject.p2query</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
-  <name>Run and configure an OSGi runtime</name>
+  <name>Fedora Project p2 Query Tool</name>
   <description>
   </description>
 
@@ -41,15 +41,8 @@
     <profile>
       <id>mars</id>
       <properties>
-        <platform-repo>http://download.eclipse.org/eclipse/updates/4.5milestones</platform-repo>
+        <platform-repo>http://download.eclipse.org/releases/mars</platform-repo>
       </properties>
-      <repositories>
-        <repository>
-          <id>orbit-repo</id>
-          <layout>p2</layout>
-          <url>http://download.eclipse.org/tools/orbit/downloads/drops/S20141023165154/repository/</url>
-        </repository>
-      </repositories>
     </profile>
   </profiles>
 
