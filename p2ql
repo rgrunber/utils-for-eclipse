@@ -9,15 +9,13 @@ function setup_home () {
 }
 
 function setup_jar () {
-  p2qJar=$(find /usr/share/ /opt/ /home/ -name "org.fedoraproject.p2query*.jar" 2>/dev/null)
+  p2qJar=$(find /usr/share/ /opt/ /home/ -name "org.fedoraproject.p2query*.jar" 2>/dev/null | head -1)
+  fpp2Jar=$(find /usr/share/ /opt/ /home/ -name "org.fedoraproject.p2-*.jar" 2>/dev/null | head -1)
   if [ -z ${p2qJar} ]; then
     echo "Failed to locate the p2 Query Jar."
     exit 0
   fi
 }
-
-eclipse_home=/usr/lib64/eclipse
-p2qJar=$(dirname $(readlink -f $0))/target/org.fedoraproject.p2query-0.0.1-SNAPSHOT.jar
 
 if [ -z "${eclipse_home}" ]; then
   setup_home
@@ -30,4 +28,4 @@ fi
 osgiJar=`find ${eclipse_home} -name "org.eclipse.osgi_*.jar"`
 app=org.fedoraproject.p2query.app.P2QueryApp
 
-java -classpath ${osgiJar}:${p2qJar}:$(build-classpath slf4j/api) ${app} ${eclipse_home} ${p2qJar} ${@}
+java -classpath ${osgiJar}:${p2qJar}:$(build-classpath slf4j/api) ${app} ${eclipse_home} ${p2qJar}:${fpp2Jar} ${@}

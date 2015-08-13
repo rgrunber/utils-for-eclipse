@@ -30,12 +30,17 @@ public class P2QueryApp {
 		}
 
 		Path eclipseHome = Paths.get(args[0]);
-		Path p2queryJar = Paths.get(args[1]);
+		String [] jarsEntries = args[1].split(":");
+		Path [] jarPaths = new Path[jarsEntries.length];
+		for (int i = 0; i < jarPaths.length; i++) {
+			jarPaths[i] = Paths.get(jarsEntries[i]);
+		}
+
 		String repo = args[2];
 		String cmd = args[3];
 		String query = args[4];
 
-        OSGiConfigurator configurator = new DefaultOSGiConfigurator(eclipseHome, p2queryJar);
+        OSGiConfigurator configurator = new DefaultOSGiConfigurator(eclipseHome, jarPaths);
         OSGiFramework framework = new DefaultOSGiFramework(configurator);
         OSGiServiceLocator locator = new DefaultOSGiServiceLocator(framework);
         Object p2ql = locator.getService(P2Query.class);

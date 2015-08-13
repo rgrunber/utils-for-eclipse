@@ -24,17 +24,17 @@ import org.fedoraproject.p2query.osgi.OSGiConfigurator;
  */
 public class DefaultOSGiConfigurator implements OSGiConfigurator {
 	private Path eclipseHome;
-	private Path p2queryJar;
+	private Path [] jarPaths;
 	
-	public DefaultOSGiConfigurator(Path eclipseHome, Path p2queryJar) {
+	public DefaultOSGiConfigurator(Path eclipseHome, Path [] jarPaths) {
 		this.eclipseHome = eclipseHome;
-		this.p2queryJar = p2queryJar;
+		this.jarPaths = jarPaths;
 	}
 
 	@Override
 	public Collection<Path> getBundles() {
 		Collection<Path> res = new LinkedHashSet<>();
-		res.add(p2queryJar);
+		res.addAll(Arrays.asList(jarPaths));
 		Path pluginsDir = eclipseHome.resolve("plugins");
 		try {
 			for (Path bundle : Files.newDirectoryStream(pluginsDir)) {
