@@ -26,6 +26,12 @@ public class P2QueryApp {
 	public static void main (String [] args) {
 		if (args.length != 5) {
 			System.out.println("Usage : p2ql REPO COMMAND ARGUMENT");
+			System.out.println("Supported Commands : ");
+			System.out.println("provides, "
+					+ "whatprovides, "
+					+ "requires, "
+					+ "whatrequires, "
+					+ "transitive-closure");
 			return;
 		}
 
