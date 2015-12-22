@@ -36,6 +36,9 @@ public class P2Query {
 
 	public void executeQuery(String repo, String cmd, String arg) {
 		IMetadataRepository metaRepo = loadRepository(repo);
+		if (metaRepo == null) {
+			return;
+		}
 		switch (cmd) {
 		case "provides":
 			provides(metaRepo, arg);
@@ -189,6 +192,7 @@ public class P2Query {
 			IMetadataRepositoryManager metadataRM = (IMetadataRepositoryManager) agent.getService(IMetadataRepositoryManager.SERVICE_NAME);
 			res = metadataRM.loadRepository(new URI(repo), new NullProgressMonitor());
 		} catch (Exception e) {
+			System.err.println(e.getMessage());
 		}
 		return res;
 	}
