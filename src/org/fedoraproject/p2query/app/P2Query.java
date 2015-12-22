@@ -55,9 +55,35 @@ public class P2Query {
 		case "transitive-closure":
 			transitiveClosure(metaRepo, arg);
 			break;
+		case "dangling":
+			dangling(metaRepo);
 		default:
 			break;
 		}
+	}
+
+	private void dangling(IMetadataRepository metaRepo) {
+		Set<IInstallableUnit> units = metaRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor()).toUnmodifiableSet();
+		for (IInstallableUnit u : units) {
+			if (isDangling(u, units, metaRepo)) {
+				printIU(u);
+			}
+		}
+	}
+
+	private boolean isDangling(IInstallableUnit u, Set<IInstallableUnit> units,
+			IMetadataRepository metaRepo) {
+		for (IInstallableUnit v : units) {
+			for (IRequirement req : v.getRequirements()) {
+				IQueryResult<IInstallableUnit> matches = metaRepo.query(QueryUtil.createMatchQuery(req.getMatches()), new NullProgressMonitor());
+				for (IInstallableUnit m : matches) {
+					if (m.equals(u)) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 	private void transitiveClosure(IMetadataRepository metaRepo, String arg) {
