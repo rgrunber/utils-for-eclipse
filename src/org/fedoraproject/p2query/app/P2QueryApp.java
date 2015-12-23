@@ -25,24 +25,16 @@ import org.fedoraproject.p2query.osgi.impl.DefaultOSGiServiceLocator;
 
 public class P2QueryApp {
 
-	static final List<String> UNARY = Arrays.asList(new String [] {"dangling"});
-	static final List<String> BINARY = Arrays.asList(
+	static final List<String> FOUR = Arrays.asList(new String [] {"dangling"});
+	static final List<String> FIVE = Arrays.asList(
 			new String [] {"provides", "whatprovides",
-					"requires", "whatrequires", "transitive-closure"});
+					"requires", "whatrequires", "transitive-closure", "diff"});
 
 	public static void main (String [] args) {
-		if (args.length < 4 || (args.length == 4 && !UNARY.contains(args[3]))
-				|| (args.length == 5 && !BINARY.contains(args[3]))) {
-			System.out.println("Usage : p2ql REPO COMMAND ARGUMENT");
-			System.out.println("Supported Commands : ");
-			System.out.println("provides, "
-					+ "whatprovides, "
-					+ "requires, "
-					+ "whatrequires, "
-					+ "transitive-closure");
-			System.out.println("Usage : p2ql REPO COMMAND");
-			System.out.println("Supported Commands: ");
-			System.out.println("dangling");
+		if (args.length < 4 || args.length > 5
+				|| (args.length == 4 && !FOUR.contains(args[3]))
+				|| (args.length == 5 && !FIVE.contains(args[3]) && !FIVE.contains(args[2]))) {
+			printUsage();
 			return;
 		}
 
@@ -53,26 +45,34 @@ public class P2QueryApp {
 			jarPaths[i] = Paths.get(jarsEntries[i]);
 		}
 
-		String repo = args[2];
-		String cmd = args[3];
-
-		String query = null;
-		if (BINARY.contains(cmd)) {
-			query = args[4];
-		}
-
         OSGiConfigurator configurator = new DefaultOSGiConfigurator(eclipseHome, jarPaths);
         OSGiFramework framework = new DefaultOSGiFramework(configurator);
         OSGiServiceLocator locator = new DefaultOSGiServiceLocator(framework);
         Object p2ql = locator.getService(P2Query.class);
         try {
 			Method exec = p2ql.getClass().getMethod("executeQuery", String.class, String.class, String.class);
-			exec.invoke(p2ql, repo, cmd, query);
+			exec.invoke(p2ql, args[2], args[3], args.length == 5 ? args[4] : null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
         framework.shutdown();
 
     }
+
+	private static void printUsage() {
+		System.out.println("Usage : p2ql REPO COMMAND ARGUMENT");
+		System.out.println("Supported Commands : ");
+		System.out.println("provides, "
+				+ "whatprovides, "
+				+ "requires, "
+				+ "whatrequires, "
+				+ "transitive-closure");
+		System.out.println("Usage : p2ql REPO COMMAND");
+		System.out.println("Supported Commands: ");
+		System.out.println("dangling");
+		System.out.println("Usage : p2ql OLD_REPO NEW_REPO");
+		System.out.println("Supported Commands : ");
+		System.out.println("diff");
+	}
 
 }

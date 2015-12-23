@@ -34,31 +34,72 @@ import org.osgi.framework.ServiceReference;
 
 public class P2Query {
 
-	public void executeQuery(String repo, String cmd, String arg) {
-		IMetadataRepository metaRepo = loadRepository(repo);
+	public void executeQuery(String arg1, String arg2, String arg3) {
+		String cmd = arg1;
+		switch (cmd) {
+		case "diff":
+			diff(arg2, arg3);
+			return;
+		default:
+			break;
+		}
+
+		cmd = arg2;
+		IMetadataRepository metaRepo = loadRepository(arg1);
 		if (metaRepo == null) {
 			return;
 		}
 		switch (cmd) {
 		case "provides":
-			provides(metaRepo, arg);
+			provides(metaRepo, arg3);
 			break;
 		case "whatprovides":
-			whatprovides(metaRepo, arg);
+			whatprovides(metaRepo, arg3);
 			break;
 		case "requires":
-			requires(metaRepo, arg);
+			requires(metaRepo, arg3);
 			break;
 		case "whatrequires":
-			whatrequires(metaRepo, arg);
+			whatrequires(metaRepo, arg3);
 			break;
 		case "transitive-closure":
-			transitiveClosure(metaRepo, arg);
+			transitiveClosure(metaRepo, arg3);
 			break;
 		case "dangling":
 			dangling(metaRepo);
+			break;
 		default:
 			break;
+		}
+	}
+
+	private void diff(String oldLoc, String newLoc) {
+		IMetadataRepository oldRepo = loadRepository(oldLoc);
+		IMetadataRepository newRepo = loadRepository(newLoc);
+		if (oldRepo == null || newRepo == null) {
+			return;
+		}
+		Set<IInstallableUnit> oldUnits = oldRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor()).toUnmodifiableSet();
+		Set<IInstallableUnit> newUnits = newRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor()).toUnmodifiableSet();
+
+		Set<IInstallableUnit> added = new LinkedHashSet<IInstallableUnit>(newUnits);
+		added.removeAll(oldUnits);
+		Set<IInstallableUnit> removed = new LinkedHashSet<IInstallableUnit>(oldUnits);
+		removed.removeAll(newUnits);
+		Set<IInstallableUnit> unchanged = new LinkedHashSet<IInstallableUnit>(oldUnits);
+		unchanged.retainAll(newUnits);
+
+		System.out.println("=== UNCHANGED ===");
+		for (IInstallableUnit u : unchanged) {
+			printIU(u);
+		}
+		System.out.println("=== REMOVED ===");
+		for (IInstallableUnit u : removed) {
+			printIU(u);
+		}
+		System.out.println("=== ADDED ===");
+		for (IInstallableUnit u : added) {
+			printIU(u);
 		}
 	}
 
