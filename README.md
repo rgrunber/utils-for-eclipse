@@ -3,8 +3,8 @@ Fedora Project p2 Query Tool
 
 ### Supported Commands
 
-provides, whatprovides, requires, whatrequires, transitive-closure
+provides, whatprovides, requires, whatrequires, transitive-closure, diff, dangling, graph
 
 ### How To Begin Using
     mvn clean verify
-    p2ql REPO COMMAND ARGUMENT
+    p2ql ...

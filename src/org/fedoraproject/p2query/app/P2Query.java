@@ -11,13 +11,17 @@
 package org.fedoraproject.p2query.app;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.p2.core.IProvisioningAgent;
@@ -25,7 +29,10 @@ import org.eclipse.equinox.p2.core.IProvisioningAgentProvider;
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 import org.eclipse.equinox.p2.metadata.IProvidedCapability;
 import org.eclipse.equinox.p2.metadata.IRequirement;
+import org.eclipse.equinox.p2.query.Collector;
+import org.eclipse.equinox.p2.query.IQuery;
 import org.eclipse.equinox.p2.query.IQueryResult;
+import org.eclipse.equinox.p2.query.IQueryable;
 import org.eclipse.equinox.p2.query.QueryUtil;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
@@ -34,36 +41,54 @@ import org.osgi.framework.ServiceReference;
 
 public class P2Query {
 
-	public void executeQuery(String arg1, String arg2, String arg3) {
-		String cmd = arg1;
+	private static final IQueryable<IInstallableUnit> EMPTY_IU_QUERYABLE = new IQueryable<IInstallableUnit>() {
+		public IQueryResult<IInstallableUnit> query(IQuery<IInstallableUnit> query, IProgressMonitor monitor) {
+			return Collector.emptyCollector();
+		}
+	};
+
+	public void executeQuery(String [] args) {
+		String cmd = args[0];
 		switch (cmd) {
 		case "diff":
-			diff(arg2, arg3);
+			diff(args[1], args[2]);
+			return;
+		case "graph":
+			boolean detail = args[1].equals("-v") ? true : false;
+			Set<IMetadataRepository> repos = new LinkedHashSet<>();
+			for (int i = (detail ? 2 : 1); i < args.length; i++) {
+				IMetadataRepository repo = loadRepository(args[i]);
+				if (repo == null) {
+					return;
+				}
+				repos.add(repo);
+			}
+			graph(repos, detail);
 			return;
 		default:
 			break;
 		}
 
-		cmd = arg2;
-		IMetadataRepository metaRepo = loadRepository(arg1);
+		cmd = args[1];
+		IMetadataRepository metaRepo = loadRepository(args[0]);
 		if (metaRepo == null) {
 			return;
 		}
 		switch (cmd) {
 		case "provides":
-			provides(metaRepo, arg3);
+			provides(metaRepo, args[2]);
 			break;
 		case "whatprovides":
-			whatprovides(metaRepo, arg3);
+			whatprovides(metaRepo, args[2]);
 			break;
 		case "requires":
-			requires(metaRepo, arg3);
+			requires(metaRepo, args[2]);
 			break;
 		case "whatrequires":
-			whatrequires(metaRepo, arg3);
+			whatrequires(metaRepo, args[2]);
 			break;
 		case "transitive-closure":
-			transitiveClosure(metaRepo, arg3);
+			transitiveClosure(metaRepo, args[2]);
 			break;
 		case "dangling":
 			dangling(metaRepo);
@@ -71,6 +96,51 @@ public class P2Query {
 		default:
 			break;
 		}
+	}
+
+	private void graph(Set<IMetadataRepository> repos, boolean detail) {
+		// Combine all repositories so we can query them together
+		IQueryable<IInstallableUnit> allRepo = EMPTY_IU_QUERYABLE;
+		for (IMetadataRepository repo : repos) {
+			IQueryResult<IInstallableUnit> res = repo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor());
+			allRepo = QueryUtil.compoundQueryable(allRepo, res);
+		}
+
+		Set<IInstallableUnit> allUnits = allRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor()).toUnmodifiableSet();
+		for (IInstallableUnit u : allUnits) {
+			Set<IInstallableUnit> requires = getRequires(u, allRepo);
+			for (IInstallableUnit v : requires) {
+				String uRepo = whichRepo(u, repos).getLocation().toString();
+				String vRepo = whichRepo(v, repos).getLocation().toString();
+				if (!uRepo.equals(vRepo)) {
+					printEdge(uRepo, vRepo, u, v, detail);
+				}
+			}
+		}
+		return;
+	}
+
+	private static IMetadataRepository whichRepo(IInstallableUnit u, Set<IMetadataRepository> repos) {
+		for (IMetadataRepository repo : repos) {
+			if (!repo.query(QueryUtil.createIUQuery(u), new NullProgressMonitor()).isEmpty()) {
+				return repo;
+			}
+		}
+		return null;
+	}
+
+	private static Set<IInstallableUnit> getRequires (IInstallableUnit u, IQueryable<IInstallableUnit> repo) {
+		Set<IRequirement> requirements = new LinkedHashSet<>(u.getRequirements());
+		requirements.addAll(u.getMetaRequirements());
+
+		Set<IInstallableUnit> matches = new LinkedHashSet<>();
+		for (IRequirement r : requirements) {
+			if (r.getMax() != 0 && r.getMin() != 0) {
+				IQuery<IInstallableUnit> mquery = QueryUtil.createMatchQuery(r.getMatches());
+				matches.addAll(repo.query(mquery, new NullProgressMonitor()).toUnmodifiableSet());
+			}
+		}
+		return matches;
 	}
 
 	private void diff(String oldLoc, String newLoc) {
@@ -274,6 +344,15 @@ public class P2Query {
 	
 	private void printProv (IProvidedCapability cap) {
 		System.out.println("* " + cap.toString());
+	}
+
+	private void printEdge(String uRepo, String vRepo, IInstallableUnit u,
+			IInstallableUnit v, boolean detail) {
+		if (detail) {
+			System.out.println(String.format("(%s) %s -> %s (%s)", u, uRepo, vRepo, v));
+		} else {
+			System.out.println(String.format("%s -> %s", uRepo, vRepo));
+		}
 	}
 
 }

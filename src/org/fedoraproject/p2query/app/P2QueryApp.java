@@ -29,20 +29,22 @@ public class P2QueryApp {
 	static final List<String> FIVE = Arrays.asList(
 			new String [] {"provides", "whatprovides",
 					"requires", "whatrequires", "transitive-closure", "diff"});
+	static final List<String> NO_LIMIT = Arrays.asList(new String [] {"graph"});
 
 	public static void main (String [] args) {
-		if (args.length < 4 || args.length > 5
-				|| (args.length == 4 && !FOUR.contains(args[3]))
-				|| (args.length == 5 && !FIVE.contains(args[3]) && !FIVE.contains(args[2]))) {
+		if (args.length < 4) {
 			printUsage();
 			return;
 		}
-
 		Path eclipseHome = Paths.get(args[0]);
 		String [] jarsEntries = args[1].split(":");
 		Path [] jarPaths = new Path[jarsEntries.length];
 		for (int i = 0; i < jarPaths.length; i++) {
 			jarPaths[i] = Paths.get(jarsEntries[i]);
+		}
+		String [] cmdArgs = new String [args.length - 2];
+		for (int i = 2; i < args.length; i++) {
+			cmdArgs[i-2] = args[i];
 		}
 
         OSGiConfigurator configurator = new DefaultOSGiConfigurator(eclipseHome, jarPaths);
@@ -50,8 +52,8 @@ public class P2QueryApp {
         OSGiServiceLocator locator = new DefaultOSGiServiceLocator(framework);
         Object p2ql = locator.getService(P2Query.class);
         try {
-			Method exec = p2ql.getClass().getMethod("executeQuery", String.class, String.class, String.class);
-			exec.invoke(p2ql, args[2], args[3], args.length == 5 ? args[4] : null);
+			Method exec = p2ql.getClass().getMethod("executeQuery", String[].class);
+			exec.invoke(p2ql, new Object [] {cmdArgs});
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -70,9 +72,12 @@ public class P2QueryApp {
 		System.out.println("Usage : p2ql REPO COMMAND");
 		System.out.println("Supported Commands: ");
 		System.out.println("dangling");
-		System.out.println("Usage : p2ql OLD_REPO NEW_REPO");
+		System.out.println("Usage : p2ql COMMAND OLD_REPO NEW_REPO");
 		System.out.println("Supported Commands : ");
 		System.out.println("diff");
+		System.out.println("Usage : p2ql COMMAND REPO_1 REPO_2 REPO_3, .. ,REPO_N");
+		System.out.println("Supported Commands : ");
+		System.out.println("graph");
 	}
 
 }
