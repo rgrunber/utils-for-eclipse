@@ -11,11 +11,8 @@
 package org.fedoraproject.p2query.app;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -41,6 +38,7 @@ import org.osgi.framework.ServiceReference;
 
 public class P2Query {
 
+	private static IMetadataRepositoryManager metadataRM;
 	private static final IQueryable<IInstallableUnit> EMPTY_IU_QUERYABLE = new IQueryable<IInstallableUnit>() {
 		public IQueryResult<IInstallableUnit> query(IQuery<IInstallableUnit> query, IProgressMonitor monitor) {
 			return Collector.emptyCollector();
@@ -320,13 +318,14 @@ public class P2Query {
 
 	private IMetadataRepository loadRepository(String repo) {
 		IMetadataRepository res = null;
-		BundleContext bc = Platform.getBundle("org.fedoraproject.p2query").getBundleContext();
-		ServiceReference<?> sr = (ServiceReference<?>) bc.getServiceReference(IProvisioningAgentProvider.SERVICE_NAME);
-		IProvisioningAgentProvider pr = (IProvisioningAgentProvider) bc.getService(sr);
-		IProvisioningAgent agent;
 		try {
-			agent = pr.createAgent(null);
-			IMetadataRepositoryManager metadataRM = (IMetadataRepositoryManager) agent.getService(IMetadataRepositoryManager.SERVICE_NAME);
+			if (metadataRM == null) {
+				BundleContext bc = Platform.getBundle("org.fedoraproject.p2query").getBundleContext();
+				ServiceReference<?> sr = (ServiceReference<?>) bc.getServiceReference(IProvisioningAgentProvider.SERVICE_NAME);
+				IProvisioningAgentProvider pr = (IProvisioningAgentProvider) bc.getService(sr);
+				IProvisioningAgent agent = pr.createAgent(null);
+				metadataRM = (IMetadataRepositoryManager) agent.getService(IMetadataRepositoryManager.SERVICE_NAME);
+			}
 			res = metadataRM.loadRepository(new URI(repo), new NullProgressMonitor());
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
