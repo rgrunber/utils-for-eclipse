@@ -3,7 +3,7 @@ Fedora Project p2 Query Tool
 
 ### Supported Commands
 
-provides, whatprovides, requires, whatrequires, transitive-closure, diff, dangling, graph
+provides, whatprovides, requires, whatrequires, transitive-closure, diff, dangling, graph, overlap
 
 ### How To Begin Using
     mvn clean verify

@@ -11,8 +11,10 @@
 package org.fedoraproject.p2query.app;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -91,8 +93,40 @@ public class P2Query {
 		case "dangling":
 			dangling(metaRepo);
 			break;
+		case "overlap":
+			overlapping(metaRepo);
 		default:
 			break;
+		}
+	}
+
+	private void overlapping(IMetadataRepository metaRepo) {
+		Map<String, List<String>> provideToUnit = new HashMap<> ();
+		IQueryResult<IInstallableUnit> qRes = metaRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor());
+		Set<IInstallableUnit> units = qRes.toUnmodifiableSet();
+		for (IInstallableUnit u : units) {
+			for (IProvidedCapability p : u.getProvidedCapabilities()) {
+				String key = p.toString();
+				if (p.getNamespace().equals("java.package")) {
+					if (provideToUnit.get(key) == null) {
+						provideToUnit.put(key, new ArrayList<String>());
+					}
+					provideToUnit.get(key).add(u.toString());
+				}
+			}
+		}
+
+		for (Entry<String, List<String>> e : provideToUnit.entrySet()) {
+			List<String> overlaps = e.getValue();
+			if (overlaps.size() > 1) {
+				StringBuffer buff = new StringBuffer();
+				for (String o : overlaps) {
+					buff.append(',');
+					buff.append(o);
+				}
+				System.out.println("Overlaps for " + e.getKey());
+				System.out.println(buff.substring(1));
+			}
 		}
 	}
 
