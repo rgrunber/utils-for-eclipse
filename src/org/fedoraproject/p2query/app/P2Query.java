@@ -142,10 +142,13 @@ public class P2Query {
 		for (IInstallableUnit u : allUnits) {
 			Set<IInstallableUnit> requires = getRequires(u, allRepo);
 			for (IInstallableUnit v : requires) {
-				String uRepo = whichRepo(u, repos).getLocation().toString();
-				String vRepo = whichRepo(v, repos).getLocation().toString();
-				if (!uRepo.equals(vRepo)) {
-					printEdge(uRepo, vRepo, u, v, detail);
+				IMetadataRepository uRepo = whichRepo(u, repos);
+				IMetadataRepository vRepo = whichRepo(v, repos);
+				String uRepoName = uRepo.getLocation().toString();
+				String vRepoName = vRepo.getLocation().toString();
+				if (!uRepoName.equals(vRepoName) &&
+						uRepo.query(QueryUtil.createIUQuery(v), new NullProgressMonitor()).isEmpty()) {
+					printEdge(uRepoName, vRepoName, u, v, detail);
 				}
 			}
 		}
@@ -350,7 +353,7 @@ public class P2Query {
 		}
 	}
 
-	private IMetadataRepository loadRepository(String repo) {
+	public static IMetadataRepository loadRepository(String repo) {
 		IMetadataRepository res = null;
 		try {
 			if (metadataRM == null) {
