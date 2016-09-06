@@ -267,7 +267,7 @@ public class P2Query {
 		for (IInstallableUnit u : units) {
 			Set<IRequirement> tmp = new LinkedHashSet<>();
 			for (IRequirement req : u.getRequirements()) {
-				if (req.toString().contains(arg)) {
+				if (req.toString().matches(arg)) {
 					tmp.add(req);
 				}
 			}
@@ -290,7 +290,7 @@ public class P2Query {
 		for (IInstallableUnit u : units) {
 			Set<IProvidedCapability> tmp = new LinkedHashSet<>();
 			for (IProvidedCapability cap : u.getProvidedCapabilities()) {
-				if (cap.toString().contains(arg)) {
+				if (cap.toString().matches(arg)) {
 					tmp.add(cap);
 				}
 			}
@@ -312,7 +312,7 @@ public class P2Query {
 		Map<IInstallableUnit, Set<IRequirement>> res = new HashMap<>();
 		for (IInstallableUnit u : units) {
 			Set<IRequirement> tmp = new LinkedHashSet<>();
-			if (u.getId().contains(arg)) {
+			if (u.getId().matches(arg)) {
 				for (IRequirement req : u.getRequirements()) {
 					tmp.add(req);
 				}
@@ -336,7 +336,7 @@ public class P2Query {
 		Map<IInstallableUnit,Set<IProvidedCapability>> res = new HashMap<>();
 		for (IInstallableUnit u : units) {
 			Set<IProvidedCapability> tmp = new LinkedHashSet<>();
-			if (u.getId().contains(arg)) {
+			if (u.getId().matches(arg)) {
 				for (IProvidedCapability cap : u.getProvidedCapabilities()) {
 					tmp.add(cap);
 				}
