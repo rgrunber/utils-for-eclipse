@@ -68,7 +68,7 @@ public class P2QueryApp {
 				+ "whatprovides, "
 				+ "requires, "
 				+ "whatrequires, "
-				+ "transitive-closure"
+				+ "transitive-closure "
 				+ "overlap");
 		System.out.println("Usage : p2ql REPO COMMAND");
 		System.out.println("Supported Commands: ");

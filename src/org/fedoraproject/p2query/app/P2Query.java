@@ -28,6 +28,7 @@ import org.eclipse.equinox.p2.core.IProvisioningAgentProvider;
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 import org.eclipse.equinox.p2.metadata.IProvidedCapability;
 import org.eclipse.equinox.p2.metadata.IRequirement;
+import org.eclipse.equinox.p2.query.CollectionResult;
 import org.eclipse.equinox.p2.query.Collector;
 import org.eclipse.equinox.p2.query.IQuery;
 import org.eclipse.equinox.p2.query.IQueryResult;
@@ -70,7 +71,7 @@ public class P2Query {
 		}
 
 		cmd = args[1];
-		IMetadataRepository metaRepo = loadRepository(args[0]);
+		IQueryable<IInstallableUnit> metaRepo = loadRepositories(args[0]);
 		if (metaRepo == null) {
 			return;
 		}
@@ -100,7 +101,7 @@ public class P2Query {
 		}
 	}
 
-	private void overlapping(IMetadataRepository metaRepo) {
+	private void overlapping(IQueryable<IInstallableUnit> metaRepo) {
 		Map<String, List<String>> provideToUnit = new HashMap<> ();
 		IQueryResult<IInstallableUnit> qRes = metaRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor());
 		Set<IInstallableUnit> units = qRes.toUnmodifiableSet();
@@ -208,7 +209,7 @@ public class P2Query {
 		}
 	}
 
-	private void dangling(IMetadataRepository metaRepo) {
+	private void dangling(IQueryable<IInstallableUnit> metaRepo) {
 		Set<IInstallableUnit> units = metaRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor()).toUnmodifiableSet();
 		for (IInstallableUnit u : units) {
 			if (isDangling(u, units, metaRepo)) {
@@ -218,7 +219,7 @@ public class P2Query {
 	}
 
 	private boolean isDangling(IInstallableUnit u, Set<IInstallableUnit> units,
-			IMetadataRepository metaRepo) {
+			IQueryable<IInstallableUnit> metaRepo) {
 		for (IInstallableUnit v : units) {
 			for (IRequirement req : v.getRequirements()) {
 				IQueryResult<IInstallableUnit> matches = metaRepo.query(QueryUtil.createMatchQuery(req.getMatches()), new NullProgressMonitor());
@@ -232,7 +233,7 @@ public class P2Query {
 		return true;
 	}
 
-	private void transitiveClosure(IMetadataRepository metaRepo, String arg) {
+	private void transitiveClosure(IQueryable<IInstallableUnit> metaRepo, String arg) {
 		Stack<IInstallableUnit> toVisit = new Stack<>();
 		Set<IInstallableUnit> res = new LinkedHashSet<>();
 		
@@ -260,7 +261,7 @@ public class P2Query {
 		
 	}
 
-	private void whatrequires(IMetadataRepository metaRepo, String arg) {
+	private void whatrequires(IQueryable<IInstallableUnit> metaRepo, String arg) {
 		IQueryResult<IInstallableUnit> qRes = metaRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor());
 		Set<IInstallableUnit> units = qRes.toUnmodifiableSet();
 		Map<IInstallableUnit,Set<IRequirement>> res = new HashMap<>();
@@ -283,7 +284,7 @@ public class P2Query {
 		}
 	}
 
-	private void whatprovides(IMetadataRepository metaRepo, String arg) {
+	private void whatprovides(IQueryable<IInstallableUnit> metaRepo, String arg) {
 		IQueryResult<IInstallableUnit> qRes = metaRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor());
 		Set<IInstallableUnit> units = qRes.toUnmodifiableSet();
 		Map<IInstallableUnit,Set<IProvidedCapability>> res = new HashMap<>();
@@ -306,7 +307,7 @@ public class P2Query {
 		}
 	}
 
-	private void requires(IMetadataRepository metaRepo, String arg) {
+	private void requires(IQueryable<IInstallableUnit> metaRepo, String arg) {
 		IQueryResult<IInstallableUnit> qRes = metaRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor());
 		Set<IInstallableUnit> units = qRes.toUnmodifiableSet();
 		Map<IInstallableUnit, Set<IRequirement>> res = new HashMap<>();
@@ -330,7 +331,7 @@ public class P2Query {
 		
 	}
 
-	private void provides(IMetadataRepository metaRepo, String arg) {
+	private void provides(IQueryable<IInstallableUnit> metaRepo, String arg) {
 		IQueryResult<IInstallableUnit> qRes = metaRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor());
 		Set<IInstallableUnit> units = qRes.toUnmodifiableSet();
 		Map<IInstallableUnit,Set<IProvidedCapability>> res = new HashMap<>();
@@ -369,15 +370,26 @@ public class P2Query {
 		}
 		return res;
 	}
-	
+
+	public static IQueryable<IInstallableUnit> loadRepositories(String input) {
+		Set<IInstallableUnit> units = new LinkedHashSet<IInstallableUnit>();
+		String [] repos = input.split(",");
+		for (String repo : repos) {
+			IMetadataRepository mRepo = loadRepository(repo);
+			IQueryResult<IInstallableUnit> res = mRepo.query(QueryUtil.ALL_UNITS, new NullProgressMonitor());
+			units.addAll(res.toUnmodifiableSet());
+		}
+		return new CollectionResult<>(units);
+	}
+
 	private void printIU (IInstallableUnit u) {
 		System.out.println("IU: " + u.toString());
 	}
-	
+
 	private void printReq (IRequirement req) {
 		System.out.println("-> " + req.toString());
 	}
-	
+
 	private void printProv (IProvidedCapability cap) {
 		System.out.println("* " + cap.toString());
 	}
