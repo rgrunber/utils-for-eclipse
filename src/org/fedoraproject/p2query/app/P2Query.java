@@ -12,7 +12,11 @@ package org.fedoraproject.p2query.app;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,12 +27,15 @@ import java.util.Stack;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.equinox.internal.p2.metadata.IRequiredCapability;
+import org.eclipse.equinox.internal.p2.metadata.OSGiVersion;
 import org.eclipse.equinox.p2.core.IProvisioningAgent;
 import org.eclipse.equinox.p2.core.IProvisioningAgentProvider;
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 import org.eclipse.equinox.p2.metadata.IProvidedCapability;
 import org.eclipse.equinox.p2.metadata.IRequirement;
 import org.eclipse.equinox.p2.query.CollectionResult;
+import org.eclipse.equinox.p2.metadata.Version;
 import org.eclipse.equinox.p2.query.Collector;
 import org.eclipse.equinox.p2.query.IQuery;
 import org.eclipse.equinox.p2.query.IQueryResult;
@@ -196,15 +203,45 @@ public class P2Query {
 		unchanged.retainAll(newUnits);
 
 		System.out.println("=== UNCHANGED ===");
-		for (IInstallableUnit u : unchanged) {
+		List<IInstallableUnit> sUnchanged = new ArrayList<>(unchanged);
+		Collections.sort(sUnchanged);
+		for (IInstallableUnit u : sUnchanged) {
 			printIU(u);
 		}
+		System.out.println("=== CHANGED ===");
+		for (Iterator<IInstallableUnit> it = removed.iterator(); it.hasNext();) {
+			IInstallableUnit u = it.next();
+			for (Iterator<IInstallableUnit> is = added.iterator(); is.hasNext();) {
+				IInstallableUnit v = is.next();
+				if (u.getId().equals(v.getId())
+						&& u.getVersion() instanceof OSGiVersion
+						&& v.getVersion() instanceof OSGiVersion) {
+					OSGiVersion uVer = (OSGiVersion) u.getVersion();
+					Version uNoQualVer = Version.createOSGi(uVer.getMajor(), uVer.getMinor(), uVer.getMicro());
+					OSGiVersion vVer = (OSGiVersion) v.getVersion();
+					Version vNoQualVer = Version.createOSGi(vVer.getMajor(), vVer.getMinor(), vVer.getMicro());
+					if (uNoQualVer.equals(vNoQualVer)) {
+						it.remove();
+						is.remove();
+						printIUDiff(u, v);
+					}
+				} else if (sameIU(u, v)) {
+					it.remove();
+					is.remove();
+					printIUDiff(u, v);
+				}
+			}
+		}
 		System.out.println("=== REMOVED ===");
-		for (IInstallableUnit u : removed) {
+		List<IInstallableUnit> sRemoved = new ArrayList<>(removed);
+		Collections.sort(sRemoved);
+		for (IInstallableUnit u : sRemoved) {
 			printIU(u);
 		}
 		System.out.println("=== ADDED ===");
-		for (IInstallableUnit u : added) {
+		List<IInstallableUnit> sAdded = new ArrayList<>(added);
+		Collections.sort(sAdded);
+		for (IInstallableUnit u : sAdded) {
 			printIU(u);
 		}
 	}
@@ -386,6 +423,13 @@ public class P2Query {
 		System.out.println("IU: " + u.toString());
 	}
 
+	private void printIUDiff(IInstallableUnit u, IInstallableUnit v) {
+		System.out.println("=====");
+		System.out.println("-- IU: " + u.toString());
+		System.out.println("++ IU: " + v.toString());
+		System.out.println("=====");
+	}
+
 	private void printReq (IRequirement req) {
 		System.out.println("-> " + req.toString());
 	}
@@ -402,5 +446,69 @@ public class P2Query {
 			System.out.println(String.format("%s -> %s", uRepo, vRepo));
 		}
 	}
+
+	private boolean sameIU (IInstallableUnit u, IInstallableUnit v) {
+		return subsetOf(u, v) && subsetOf(v, u);
+	}
+
+	private boolean matches (IProvidedCapability u, IProvidedCapability v, int versionField) {
+		if (u.getNamespace().equals(v.getNamespace()) && u.getName().equals(v.getName())
+				&& u.getVersion() instanceof OSGiVersion
+				&& v.getVersion() instanceof OSGiVersion) {
+			OSGiVersion uV = (OSGiVersion) u.getVersion();
+			OSGiVersion vV = (OSGiVersion) v.getVersion();
+			switch (versionField) {
+			case 0:
+				return true;
+			case 1:
+				return uV.getMajor() == vV.getMajor();
+			case 2:
+				return uV.getMajor() == vV.getMajor()
+				&& uV.getMinor() == vV.getMinor();
+			case 3:
+				return uV.getMajor() == vV.getMajor()
+				&& uV.getMinor() == vV.getMinor()
+				&& uV.getMicro() == vV.getMicro();
+			}
+		}
+		return false;
+	}
+
+	private boolean subsetOf (IInstallableUnit u, IInstallableUnit v) {
+		List<String> IGNORE_NS = Arrays.asList("org.eclipse.equinox.p2.iu", "osgi.bundle");
+		List<String> IGNORE_PROP = Arrays.asList("maven-artifactId");
+		for (IProvidedCapability uc : u.getProvidedCapabilities()) {
+			if (IGNORE_NS.contains(uc.getNamespace())) {
+				continue;
+			}
+			boolean matched = false;
+			for (IProvidedCapability vc : v.getProvidedCapabilities()) {
+				if (IGNORE_NS.contains(vc.getNamespace())) {
+					continue;
+				}
+
+				if (matches(uc, vc, 1)) {
+					matched = true;
+					break;
+				}
+			}
+			if (!matched) {
+				return false;
+			}
+		}
+		for (IRequirement req : u.getRequirements()) {
+			if (!v.getRequirements().contains(req)) {
+				return false;
+			}
+		}
+		for (Entry<String, String> e : u.getProperties().entrySet()) {
+			String val = v.getProperties().get(e.getKey());
+			if (!e.getValue().equals(val) && !IGNORE_PROP.contains(e.getKey())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 
 }
