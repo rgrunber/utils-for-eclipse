@@ -221,12 +221,18 @@ public class P2Query {
 					OSGiVersion vVer = (OSGiVersion) v.getVersion();
 					Version vNoQualVer = Version.createOSGi(vVer.getMajor(), vVer.getMinor(), vVer.getMicro());
 					if (uNoQualVer.equals(vNoQualVer)) {
-						it.remove();
+						try {
+							it.remove();
+						} catch (IllegalStateException e) {
+						}
 						is.remove();
 						printIUDiff(u, v);
 					}
 				} else if (sameIU(u, v)) {
-					it.remove();
+					try {
+						it.remove();
+					} catch (IllegalStateException e) {
+					}
 					is.remove();
 					printIUDiff(u, v);
 				}
