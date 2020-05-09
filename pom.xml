@@ -25,23 +25,17 @@
   </description>
 
   <properties>
-    <tychoVersion>0.22.0</tychoVersion>
+    <tychoVersion>1.5.0</tychoVersion>
   </properties>
 
   <profiles>
     <profile>
-      <id>luna</id>
+      <id>2020-03</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <platform-repo>http://download.eclipse.org/releases/luna</platform-repo>
-      </properties>
-    </profile>
-    <profile>
-      <id>mars</id>
-      <properties>
-        <platform-repo>http://download.eclipse.org/releases/mars</platform-repo>
+        <platform-repo>http://download.eclipse.org/releases/2020-03</platform-repo>
       </properties>
     </profile>
   </profiles>
@@ -69,11 +63,6 @@
         <configuration>
           <resolver>p2</resolver>
           <environments>
-            <environment>
-              <os>linux</os>
-              <ws>gtk</ws>
-              <arch>x86</arch>
-            </environment>
             <environment>
               <os>linux</os>
               <ws>gtk</ws>

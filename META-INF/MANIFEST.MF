@@ -15,3 +15,4 @@ Service-Component: OSGI-INF/component.xml
 Export-Package: org.fedoraproject.p2query.app,
  org.fedoraproject.p2query.osgi,
  org.fedoraproject.p2query.osgi.impl
+Automatic-Module-Name: org.fedoraproject.p2query
