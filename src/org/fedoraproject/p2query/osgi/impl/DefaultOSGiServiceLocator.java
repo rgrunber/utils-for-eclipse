@@ -13,6 +13,7 @@ package org.fedoraproject.p2query.osgi.impl;
 import org.fedoraproject.p2query.osgi.OSGiFramework;
 import org.fedoraproject.p2query.osgi.OSGiServiceLocator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 
 /**
@@ -29,13 +30,18 @@ public class DefaultOSGiServiceLocator implements OSGiServiceLocator {
 	public <T> T getService(Class<T> clazz) {
 		BundleContext context = framework.getBundleContext();
 
-		ServiceReference<T> serviceReference = context
-				.getServiceReference(clazz);
+		ServiceReference<?> serviceReference = null;
+		try {
+			serviceReference = context
+					.getAllServiceReferences(clazz.getName(), null)[0];
+		} catch (InvalidSyntaxException e) {
+			// filter syntax is valid
+		}
 
 		if (serviceReference == null)
 			throw new RuntimeException("OSGi service for " + clazz.getName()
 					+ " was not found");
 
-		return context.getService(serviceReference);
+		return (T) context.getService(serviceReference);
 	}
 }
