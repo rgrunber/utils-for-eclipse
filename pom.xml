@@ -25,20 +25,9 @@
   </description>
 
   <properties>
-    <tychoVersion>1.5.0</tychoVersion>
+    <tychoVersion>2.3.0</tychoVersion>
+    <platform-repo>http://download.eclipse.org/releases/2021-09</platform-repo>
   </properties>
-
-  <profiles>
-    <profile>
-      <id>2020-09</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <platform-repo>http://download.eclipse.org/releases/2020-09</platform-repo>
-      </properties>
-    </profile>
-  </profiles>
 
   <repositories>
     <repository>
