@@ -4,14 +4,14 @@ Bundle-Name: Fedora Project p2 Query Tool
 Bundle-SymbolicName: org.fedoraproject.p2query;singleton:=true
 Bundle-Version: 0.0.1.qualifier
 Bundle-Vendor: Fedora
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.p2.metadata,
  org.eclipse.equinox.p2.repository,
  org.eclipse.equinox.p2.core
 Bundle-ActivationPolicy: lazy
 Import-Package: org.slf4j;resolution:=optional
-Service-Component: OSGI-INF/component.xml
+Service-Component: OSGI-INF/p2.xml, OSGI-INF/jdt.xml
 Export-Package: org.fedoraproject.p2query.app,
  org.fedoraproject.p2query.osgi,
  org.fedoraproject.p2query.osgi.impl

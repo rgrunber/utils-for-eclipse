@@ -10,18 +10,10 @@
  *******************************************************************************/
 package org.fedoraproject.p2query.app;
 
-import java.lang.reflect.Method;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import org.fedoraproject.p2query.osgi.OSGiConfigurator;
-import org.fedoraproject.p2query.osgi.OSGiFramework;
-import org.fedoraproject.p2query.osgi.OSGiServiceLocator;
-import org.fedoraproject.p2query.osgi.impl.DefaultOSGiConfigurator;
-import org.fedoraproject.p2query.osgi.impl.DefaultOSGiFramework;
-import org.fedoraproject.p2query.osgi.impl.DefaultOSGiServiceLocator;
+import org.fedoraproject.p2query.osgi.OSGiApplication;
 
 public class P2QueryApp {
 
@@ -36,29 +28,7 @@ public class P2QueryApp {
 			printUsage();
 			return;
 		}
-		Path eclipseHome = Paths.get(args[0]);
-		String [] jarsEntries = args[1].split(":");
-		Path [] jarPaths = new Path[jarsEntries.length];
-		for (int i = 0; i < jarPaths.length; i++) {
-			jarPaths[i] = Paths.get(jarsEntries[i]);
-		}
-		String [] cmdArgs = new String [args.length - 2];
-		for (int i = 2; i < args.length; i++) {
-			cmdArgs[i-2] = args[i];
-		}
-
-        OSGiConfigurator configurator = new DefaultOSGiConfigurator(eclipseHome, jarPaths);
-        OSGiFramework framework = new DefaultOSGiFramework(configurator);
-        OSGiServiceLocator locator = new DefaultOSGiServiceLocator(framework);
-        Object p2ql = locator.getService(P2Query.class);
-        try {
-			Method exec = p2ql.getClass().getMethod("executeQuery", String[].class);
-			exec.invoke(p2ql, new Object [] {cmdArgs});
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-        framework.shutdown();
-
+		OSGiApplication.main(args, P2Query.class);
     }
 
 	private static void printUsage() {

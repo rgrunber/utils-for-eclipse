@@ -10,6 +10,6 @@ if [ -z "${p2qJar}" ]; then
   setup_jar
 fi
 
-app=org.fedoraproject.p2query.app.P2QueryApp
+app=org.fedoraproject.p2query.app.JDTQueryApp
 
 java -classpath ${osgiJar}:${p2qJar}:$(build-classpath slf4j/api) ${app} ${eclipse_home} ${p2qJar}:${fpp2Jar} ${@}
