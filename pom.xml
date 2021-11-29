@@ -16,13 +16,11 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.fedoraproject.p2</groupId>
-  <artifactId>org.fedoraproject.p2query</artifactId>
+  <groupId>com.github.utils4e</groupId>
+  <artifactId>parent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>eclipse-plugin</packaging>
-  <name>Fedora Project p2 Query Tool</name>
-  <description>
-  </description>
+  <name>Utilities For Eclipse :: Parent</name>
+  <packaging>pom</packaging>
 
   <properties>
     <tychoVersion>2.3.0</tychoVersion>
@@ -62,4 +60,9 @@
       </plugin>
       </plugins>
   </build>
+
+  <modules>
+    <module>com.github.utils4e</module>
+  </modules>
+
 </project>

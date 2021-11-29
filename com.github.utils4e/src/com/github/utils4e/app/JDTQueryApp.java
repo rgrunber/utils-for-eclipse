@@ -10,9 +10,9 @@
  * Contributors:
  *     Red Hat Inc. - initial API and implementation
  *******************************************************************************/
-package org.fedoraproject.p2query.app;
+package com.github.utils4e.app;
 
-import org.fedoraproject.p2query.osgi.OSGiApplication;
+import com.github.utils4e.osgi.OSGiApplication;
 
 public class JDTQueryApp {
 

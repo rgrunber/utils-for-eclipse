@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat Inc. - initial API and implementation
  *******************************************************************************/
-package org.fedoraproject.p2query.osgi;
+package com.github.utils4e.osgi;
 
 /**
  * @author Mikolaj Izdebski

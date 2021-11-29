@@ -8,18 +8,17 @@
  * Contributors:
  *     Red Hat Inc. - initial API and implementation
  *******************************************************************************/
-package org.fedoraproject.p2query.osgi;
+package com.github.utils4e.osgi;
 
-import java.nio.file.Path;
-import java.util.Collection;
+import org.osgi.framework.BundleContext;
+
 
 /**
+ * Allows Eclipse Equinox OSGi framework to be embedded in the running JVM.
+ * 
  * @author Mikolaj Izdebski
  */
-public interface OSGiConfigurator {
-	Collection<Path> getBundles();
-
-	Collection<String> getExportedPackages();
-	
-	String [] getArguments();
+public interface OSGiFramework {
+	BundleContext getBundleContext();
+	void shutdown();
 }

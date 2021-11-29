@@ -1,5 +1,8 @@
-# p2query-plugin
-Fedora Project p2 Query Tool
+# utils-for-eclipse
+
+Utilities For The Eclipse IDE
+
+## p2ql (P2 Query)
 
 ### Supported Commands
 

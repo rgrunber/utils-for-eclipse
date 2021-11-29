@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat Inc. - initial API and implementation
  *******************************************************************************/
-package org.fedoraproject.p2query.app;
+package com.github.utils4e.app;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -399,7 +399,7 @@ public class P2Query {
 		IMetadataRepository res = null;
 		try {
 			if (metadataRM == null) {
-				BundleContext bc = Platform.getBundle("org.fedoraproject.p2query").getBundleContext();
+				BundleContext bc = Platform.getBundle("com.github.utils4e").getBundleContext();
 				ServiceReference<?> sr = (ServiceReference<?>) bc.getServiceReference(IProvisioningAgentProvider.SERVICE_NAME);
 				IProvisioningAgentProvider pr = (IProvisioningAgentProvider) bc.getService(sr);
 				IProvisioningAgent agent = pr.createAgent(null);

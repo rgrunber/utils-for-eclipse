@@ -10,15 +10,15 @@
  * Contributors:
  *     Red Hat Inc. - initial API and implementation
  *******************************************************************************/
-package org.fedoraproject.p2query.osgi;
+package com.github.utils4e.osgi;
 
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.fedoraproject.p2query.osgi.impl.DefaultOSGiConfigurator;
-import org.fedoraproject.p2query.osgi.impl.DefaultOSGiFramework;
-import org.fedoraproject.p2query.osgi.impl.DefaultOSGiServiceLocator;
+import com.github.utils4e.osgi.impl.DefaultOSGiConfigurator;
+import com.github.utils4e.osgi.impl.DefaultOSGiFramework;
+import com.github.utils4e.osgi.impl.DefaultOSGiServiceLocator;
 
 public class OSGiApplication {
 

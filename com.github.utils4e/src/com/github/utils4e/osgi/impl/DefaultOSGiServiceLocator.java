@@ -8,13 +8,14 @@
  * Contributors:
  *     Red Hat Inc. - initial API and implementation
  *******************************************************************************/
-package org.fedoraproject.p2query.osgi.impl;
+package com.github.utils4e.osgi.impl;
 
-import org.fedoraproject.p2query.osgi.OSGiFramework;
-import org.fedoraproject.p2query.osgi.OSGiServiceLocator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
+
+import com.github.utils4e.osgi.OSGiFramework;
+import com.github.utils4e.osgi.OSGiServiceLocator;
 
 /**
  * @author Mikolaj Izdebski

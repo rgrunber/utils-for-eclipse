@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat Inc. - initial API and implementation
  *******************************************************************************/
-package org.fedoraproject.p2query.osgi.impl;
+package com.github.utils4e.osgi.impl;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,13 +17,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.adaptor.EclipseStarter;
-import org.fedoraproject.p2query.osgi.OSGiConfigurator;
-import org.fedoraproject.p2query.osgi.OSGiFramework;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.utils4e.osgi.OSGiConfigurator;
+import com.github.utils4e.osgi.OSGiFramework;
 
 /**
  * @author Mikolaj Izdebski

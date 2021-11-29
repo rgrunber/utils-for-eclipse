@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="false" name="P2Query">
-   <implementation class="org.fedoraproject.p2query.app.P2Query"/>
+   <implementation class="com.github.utils4e.app.P2Query"/>
    <service>
-      <provide interface="org.fedoraproject.p2query.app.P2Query"/>
+      <provide interface="com.github.utils4e.app.P2Query"/>
    </service>
 </scr:component>

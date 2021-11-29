@@ -10,7 +10,7 @@
  * Contributors:
  *     Red Hat Inc. - initial API and implementation
  *******************************************************************************/
-package org.fedoraproject.p2query.app;
+package com.github.utils4e.app;
 
 import static org.eclipse.jdt.internal.core.search.indexing.IIndexConstants.ANNOTATION_REF;
 import static org.eclipse.jdt.internal.core.search.indexing.IIndexConstants.CONSTRUCTOR_DECL;
