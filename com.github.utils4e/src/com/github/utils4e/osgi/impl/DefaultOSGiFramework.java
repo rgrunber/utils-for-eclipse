@@ -62,6 +62,7 @@ public class DefaultOSGiFramework implements OSGiFramework {
 				Files.createDirectory(configLoc);
 			}
 			properties.put("osgi.configuration.area", configLoc.toString());
+			properties.put("osgi.instance.area", configLoc.resolve("workspace").toString());
 		}
 		properties.put("osgi.parentClassloader", "fwk");
 
