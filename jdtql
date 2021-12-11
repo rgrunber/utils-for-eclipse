@@ -1,6 +1,6 @@
 #! /bin/bash
 
-. common.sh
+. $(dirname `readlink -f $0`)/common.sh
 
 if [ -z "${eclipse_home}" ]; then
   setup_home
