@@ -80,7 +80,7 @@ public class JDTQuery {
 				@Override
 				public void preVisit(ASTNode node) {
 					int level = getLevel(node);
-					System.out.println("=".repeat(level) + ">" + node.getClass());
+					System.out.println("  ".repeat(level) + node.getClass());
 					super.preVisit(node);
 				}
 
