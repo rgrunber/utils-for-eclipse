@@ -12,4 +12,4 @@ fi
 
 app=com.github.utils4e.app.P2QueryApp
 
-java -classpath ${osgiJar}:${p2qJar}:$(build-classpath slf4j/api) ${app} ${eclipse_home} ${p2qJar}:${fpp2Jar} ${@}
+java -classpath ${osgiJar}:${p2qJar}:${slf4jApiJar} ${app} ${eclipse_home} ${p2qJar}:${fpp2Jar} ${@}
