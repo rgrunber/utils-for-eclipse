@@ -6,7 +6,7 @@ function setup_home () {
     echo "Failed to locate the Eclipse Home directory."
     exit 0
   fi
-  osgiJar=`find ${eclipse_home} -name "org.eclipse.osgi_*.jar"`
+  osgiJar=$(find ${eclipse_home} -name "org.eclipse.osgi_*.jar" 2>/dev/null | head -1)
 }
 
 function setup_jar () {
