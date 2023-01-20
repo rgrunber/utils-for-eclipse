@@ -23,8 +23,8 @@
   <packaging>pom</packaging>
 
   <properties>
-    <tychoVersion>2.3.0</tychoVersion>
-    <platform-repo>http://download.eclipse.org/releases/2021-09</platform-repo>
+    <tychoVersion>3.0.1</tychoVersion>
+    <platform-repo>http://download.eclipse.org/releases/2022-12</platform-repo>
   </properties>
 
   <repositories>
