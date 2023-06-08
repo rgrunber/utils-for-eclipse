@@ -31,6 +31,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +53,9 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.index.JavaIndexer;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
@@ -73,30 +76,32 @@ public class JDTQuery {
 			TYPE_DECL, METHOD_DECL, METHOD_DECL_PLUS, CONSTRUCTOR_DECL, FIELD_DECL, MODULE_DECL, MODULE_REF, OBJECT,
 			MODULE_INFO };
 
-	public void executeQuery(String [] args) {
+	public void executeQuery(String[] args) {
 		switch (args[0]) {
-		case "index":
-		case "indexer":
-			performIndexing(args);
-			break;
-		case "ast":
-			performPrintAST(args);
-			break;
-		case "search":
-			performSearch(args);
-		default:
-			break;
+			case "index":
+			case "indexer":
+				performIndexing(args);
+				break;
+			case "ast":
+				performPrintAST(args);
+				break;
+			case "search":
+				performSearch(args);
+			case "gen_data":
+				generateTrainingData(args);
+			default:
+				break;
 		}
 	}
 
 	private void performPrintAST(String[] args) {
 		try (BufferedReader buff = new BufferedReader(new FileReader(new File(args[1])))) {
 			ASTParser parser = ASTParser.newParser(AST.getJLSLatest());
-			char [] cbuf = new char [2048];
+			char[] cbuf = new char[2048];
 			StringBuilder source = new StringBuilder();
-			while(buff.read(cbuf) > 0) {
+			while (buff.read(cbuf) > 0) {
 				source.append(cbuf);
-				cbuf = new char [2048];
+				cbuf = new char[2048];
 			}
 			parser.setSource(source.toString().toCharArray());
 			CompilationUnit cuRoot = (CompilationUnit) parser.createAST(null);
@@ -182,8 +187,84 @@ public class JDTQuery {
 			}
 		};
 		System.out.println(String.format("Searching for pattern: '%s', searchFor: %d, limitTo: %d, matchRule: %d",
-		pattern, searchFor, limitTo, matchRule));
+				pattern, searchFor, limitTo, matchRule));
 		engine.search(searchPattern, participant, SearchEngine.createWorkspaceScope(), requestor, null);
+	}
+
+	private void generateTrainingData(String[] args) {
+		int bodyPadding = 500;
+		int namePadding = 20;
+		List<File> sourceFiles = new ArrayList<>();
+		String dataPath = args[1];
+		File dataFolder = new File(dataPath);
+		getAllJavaFiles(dataFolder, sourceFiles);
+
+		ASTParser parser = ASTParser.newParser(AST.getJLSLatest());
+		for (File sourceFile : sourceFiles) {
+			try (BufferedReader buff = new BufferedReader(new FileReader(sourceFile))) {
+				char[] cbuf = new char[2048];
+				StringBuilder source = new StringBuilder();
+				while (buff.read(cbuf) > 0) {
+					source.append(cbuf);
+					cbuf = new char[2048];
+				}
+				parser.setSource(source.toString().toCharArray());
+				CompilationUnit cuRoot = (CompilationUnit) parser.createAST(null);
+
+				ASTVisitor visitor = new ASTVisitor() {
+					@Override
+					public boolean visit(MethodDeclaration node) {
+						Block block = node.getBody();
+						if (block != null) {
+							String name = node.getName().getIdentifier();
+							int offset = block.getStartPosition();
+							int length = block.getLength();
+							String body = source.substring(offset, offset + length);
+							body = body.replaceAll("\n", "");
+							if (body.length() < bodyPadding && name.length() < namePadding) {
+								name = String.format("%-" + namePadding + "s", name);
+								body = String.format("%-" + bodyPadding + "s", body);
+								String encodedName = null, encodedBody = null;
+								encodedName = convertToString(toAsciiVector(name));
+								encodedBody = convertToString(toAsciiVector(body));
+								System.out.println(String.format("%s,%s", encodedBody, encodedName));
+							}
+						}
+						return false;
+					}
+				};
+				cuRoot.accept(visitor);
+			} catch (IOException e) {
+			}
+		}
+	}
+
+	public String convertToString(byte[][] input) {
+		StringBuilder ret = new StringBuilder();
+		for (int i = 0; i < input.length; i++) {
+			String tmp = Arrays.toString(input[i]);
+			tmp = tmp.replace(" ", "");
+			String row = tmp.substring(1, tmp.length() - 1);
+			ret.append(",");
+			ret.append(row);
+		}
+		return ret.substring(1);
+	}
+
+	public byte[][] toAsciiVector(String input) {
+		byte[][] res = new byte[input.length()][128];
+		try {
+			byte[] asciiBytes = input.getBytes("US-ASCII");
+			for (int i = 0; i < input.length(); i++) {
+				byte b = asciiBytes[i];
+				byte[] ascii = new byte[128];
+				Arrays.fill(ascii, (byte) 0);
+				ascii[b] = 1;
+				res[i] = ascii;
+			}
+		} catch (UnsupportedEncodingException e) {
+		}
+		return res;
 	}
 
 	private IJavaProject createJavaProject(String projectName) {
@@ -231,6 +312,16 @@ public class JDTQuery {
 				res.add(f);
 			} else if (f.isDirectory() && f.canRead()) {
 				getAllLibraries(f, res);
+			}
+		}
+	}
+
+	private static void getAllJavaFiles(File root, List<File> res) {
+		for (File f : root.listFiles()) {
+			if (f.getName().endsWith(".java")) {
+				res.add(f);
+			} else if (f.isDirectory() && f.canRead()) {
+				getAllJavaFiles(f, res);
 			}
 		}
 	}
