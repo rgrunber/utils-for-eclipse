@@ -24,16 +24,7 @@
 
   <properties>
     <tychoVersion>3.0.1</tychoVersion>
-    <platform-repo>http://download.eclipse.org/releases/2022-12</platform-repo>
   </properties>
-
-  <repositories>
-    <repository>
-      <id>eclipse-repo</id>
-      <layout>p2</layout>
-      <url>${platform-repo}</url>
-    </repository>
-  </repositories>
 
   <build>
       <plugins>
@@ -49,6 +40,13 @@
         <version>${tychoVersion}</version>
         <configuration>
           <resolver>p2</resolver>
+          <target>
+            <artifact>
+              <groupId>com.github.utils4e</groupId>
+              <artifactId>com.github.utils4e.target</artifactId>
+              <version>${project.version}</version>
+            </artifact>
+          </target>
           <environments>
             <environment>
               <os>linux</os>
@@ -62,6 +60,7 @@
   </build>
 
   <modules>
+    <module>com.github.utils4e.target</module>
     <module>com.github.utils4e</module>
   </modules>
 

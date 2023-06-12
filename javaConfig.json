@@ -1,0 +1,8 @@
+{
+    "projects": [
+        "com.github.utils4e",
+        "com.github.utils4e.target"
+    ],
+
+   "targetPlatform": "com.github.utils4e.target/com.github.utils4e.target"
+}
