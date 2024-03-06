@@ -192,8 +192,10 @@ public class JDTQuery {
 	}
 
 	private void generateTrainingData(String[] args) {
+		int maxFiles = 5000;
 		int bodyPadding = 500;
 		int namePadding = 20;
+		int progress = 0;
 		List<File> sourceFiles = new ArrayList<>();
 		String dataPath = args[1];
 		File dataFolder = new File(dataPath);
@@ -201,6 +203,11 @@ public class JDTQuery {
 
 		ASTParser parser = ASTParser.newParser(AST.getJLSLatest());
 		for (File sourceFile : sourceFiles) {
+			if (progress > maxFiles) {
+				break;
+			}
+			System.err.print(String.format("%s\r", ((progress * 100) / maxFiles)));
+			progress++;
 			try (BufferedReader buff = new BufferedReader(new FileReader(sourceFile))) {
 				char[] cbuf = new char[2048];
 				StringBuilder source = new StringBuilder();
@@ -252,12 +259,12 @@ public class JDTQuery {
 	}
 
 	public byte[][] toAsciiVector(String input) {
-		byte[][] res = new byte[input.length()][128];
+		byte[][] res = new byte[input.length()][69];
 		try {
 			byte[] asciiBytes = input.getBytes("US-ASCII");
 			for (int i = 0; i < input.length(); i++) {
-				byte b = asciiBytes[i];
-				byte[] ascii = new byte[128];
+				byte b = toShortASCII(asciiBytes[i]);
+				byte[] ascii = new byte[69];
 				Arrays.fill(ascii, (byte) 0);
 				ascii[b] = 1;
 				res[i] = ascii;
@@ -265,6 +272,29 @@ public class JDTQuery {
 		} catch (UnsupportedEncodingException e) {
 		}
 		return res;
+	}
+
+	public byte toShortASCII(byte input) {
+		if (input < 32) {
+			return 0;
+		} else if (input < 97) {
+			return (byte) (input - 32);
+		} else if (input >= 97 && input <= 122) {
+			return (byte) (input - 32 - 32);
+		} else {
+			return (byte) (input - 32 - 26);
+		}
+	}
+
+	public byte toASCII(byte input) {
+		byte res = (byte) (input + 32);
+		if (res < 97) {
+			return res;
+		} else if (res >= 65) {
+			return (byte) (res + 26);
+		} else {
+			return 0;
+		}
 	}
 
 	private IJavaProject createJavaProject(String projectName) {
