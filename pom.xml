@@ -23,7 +23,7 @@
   <packaging>pom</packaging>
 
   <properties>
-    <tychoVersion>3.0.1</tychoVersion>
+    <tychoVersion>4.0.6</tychoVersion>
   </properties>
 
   <build>
