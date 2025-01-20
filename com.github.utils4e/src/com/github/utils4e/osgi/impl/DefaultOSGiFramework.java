@@ -13,6 +13,7 @@ package com.github.utils4e.osgi.impl;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -66,12 +67,16 @@ public class DefaultOSGiFramework implements OSGiFramework {
 		}
 		properties.put("osgi.parentClassloader", "fwk");
 
-		buf = new StringBuffer();
-		for (String pkg : equinoxConfig.getExportedPackages()) {
-			buf.append(",");
-			buf.append(pkg);
+
+		Collection<String> exportedPackages = equinoxConfig.getExportedPackages();
+		if (exportedPackages.size() > 0) {
+			buf = new StringBuffer();
+			for (String pkg : exportedPackages) {
+				buf.append(",");
+				buf.append(pkg);
+			}
+			properties.put("org.osgi.framework.system.packages.extra", buf.substring(1));
 		}
-		properties.put("org.osgi.framework.system.packages.extra", buf.substring(1));
 
 		logger.info("Launching Equinox...");
 		System.setProperty("osgi.framework.useSystemProperties", "false");

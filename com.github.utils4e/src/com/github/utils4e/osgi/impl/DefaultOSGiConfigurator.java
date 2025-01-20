@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 
 import com.github.utils4e.osgi.OSGiConfigurator;
@@ -49,7 +50,7 @@ public class DefaultOSGiConfigurator implements OSGiConfigurator {
 
 	@Override
 	public Collection<String> getExportedPackages() {
-		return Arrays.asList("org.slf4j");
+		return Collections.emptyList();
 	}
 
     @Override
